@@ -1,0 +1,6 @@
+io\thejunct\Core\Permissions.class
+io\thejunct\Core\Database.class
+io\thejunct\Core\Core.class
+io\thejunct\Core\JPlayer.class
+io\thejunct\Core\Minigame.class
+io\thejunct\Core\Listeners.class
