@@ -15,7 +15,7 @@
     <description>TheJunction Minigames Core plugin. By PantherMan594. (c) David Shen.</description>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spigot.version>1.9-R0.1-SNAPSHOT</spigot.version>
+        <spigot.version>1.9.4-R0.1-SNAPSHOT</spigot.version>
     </properties>
     <build>
         <defaultGoal>clean package</defaultGoal>
@@ -74,6 +74,13 @@
             <artifactId>spigot-api</artifactId>
             <version>${spigot.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.minecraft.server</groupId>
+            <artifactId>minecraft</artifactId>
+            <version>v1_9_R2</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/spigot.jar</systemPath>
         </dependency>
     </dependencies>
 </project>
