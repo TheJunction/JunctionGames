@@ -18,6 +18,9 @@
         <module>FlyFight</module>
     </modules>
 
+    <name>Junction Games</name>
+    <description>The Junction Games plugins. By PantherMan594. (c) The Junction Network.</description>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spigot.version>1.10-R0.1-SNAPSHOT</spigot.version>

@@ -1,5 +1,5 @@
 */target
-*/*.iml
+*.iml
 .idea
 Core/src/test/
 FlyFight/src/test/
