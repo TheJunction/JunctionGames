@@ -10,7 +10,6 @@ import io.thejunct.core.game.StartGameEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -28,11 +27,6 @@ import java.util.Set;
  * Created by david on 4/25.
  */
 public class FlyFight extends JavaPlugin implements Listener {
-
-    private static final int BOUND_MAX_XZ = 100;
-    private static final int BOUND_MIN_XZ = -100;
-    private static final int BOUND_MAX_Y = 256;
-    private static final int BOUND_MIN_Y = 0;
 
     public Minigame flyFight;
 
@@ -53,10 +47,7 @@ public class FlyFight extends JavaPlugin implements Listener {
 
         spawnList = new HashSet<>();
 
-        flyFight.getWorld().getEntities().stream().filter(e -> e.getType() == EntityType.ARMOR_STAND).forEach(e -> {
-            spawnList.add(e.getLocation());
-            ((ArmorStand) e).setVisible(false);
-        });
+        setupWorld();
     }
 
     @EventHandler
@@ -86,6 +77,10 @@ public class FlyFight extends JavaPlugin implements Listener {
     }
 
     public void setupWorld() {
-
+        flyFight.getWorld().getEntities().stream().filter(e -> e.getType() == EntityType.ARMOR_STAND).forEach(e -> {
+            spawnList.add(e.getLocation());
+            e.remove();
+        });
     }
+
 }
