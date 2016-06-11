@@ -1,6 +1,5 @@
 */target
 *.iml
 .idea
-Core/src/test/
-FlyFight/src/test/
+*/src/test/
 src/
