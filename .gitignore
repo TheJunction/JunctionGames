@@ -3,4 +3,4 @@
 .idea
 */src/test/
 src/
-.idea/workspace.xml
+*workspace.xml
