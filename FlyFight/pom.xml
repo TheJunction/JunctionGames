@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2016 The Junction Network. All Rights Reserved.
+  ~ Created by PantherMan594.
+  -->
+
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>game-parent</artifactId>
+        <groupId>io.thejunct</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>flyfight</artifactId>
+
+    <name>FlyFight</name>
+    <description>FlyFight Game plugin. By PantherMan594. (c) The Junction Network.</description>
+
+    <build>
+        <defaultGoal>clean package</defaultGoal>
+        <finalName>FlyFight</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <file>${project.basedir}/target/classes/plugin.yml</file>
+                    <replacements>
+                        <replacement>
+                            <token>#VERSION#</token>
+                            <value>${project.version}</value>
+                        </replacement>
+                        <replacement>
+                            <token>#GROUP#</token>
+                            <value>${project.groupId}</value>
+                        </replacement>
+                        <replacement>
+                            <token>#NAME#</token>
+                            <value>${project.name}</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.thejunct</groupId>
+            <artifactId>core</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+</project>

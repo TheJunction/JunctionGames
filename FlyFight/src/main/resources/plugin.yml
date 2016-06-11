@@ -1,0 +1,5 @@
+main: #GROUP#.#NAME#.#NAME#
+name: #NAME#
+author: PantherMan594
+version: #VERSION#
+depend: [Core]
