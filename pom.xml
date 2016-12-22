@@ -16,6 +16,7 @@
     <modules>
         <module>Core</module>
         <module>FlyFight</module>
+        <module>Temptation</module>
     </modules>
 
     <name>Junction Games</name>

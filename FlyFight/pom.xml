@@ -53,7 +53,7 @@
                         </replacement>
                         <replacement>
                             <token>#GROUP#</token>
-                            <value>${project.groupId}</value>
+                            <value>${project.groupId}.${project.artifactId}</value>
                         </replacement>
                         <replacement>
                             <token>#NAME#</token>

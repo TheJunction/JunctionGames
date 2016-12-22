@@ -14,14 +14,14 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>core</artifactId>
+    <artifactId>temptation</artifactId>
 
-    <name>Core</name>
-    <description>The Junction Games Core plugin. By PantherMan594. (c) The Junction Network.</description>
+    <name>Temptation</name>
+    <description>Temptation plugin. By PantherMan594. (c) The Junction Network.</description>
 
     <build>
         <defaultGoal>clean package</defaultGoal>
-        <finalName>Core</finalName>
+        <finalName>Temptation</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -65,14 +65,20 @@
         </plugins>
     </build>
 
+    <repositories>
+        <repository>
+            <id>sk89q-repo</id>
+            <url>http://maven.sk89q.com/repo/</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
-            <groupId>net.minecraft</groupId>
-            <artifactId>minecraft</artifactId>
-            <version>v1_10_R1</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/spigot.jar</systemPath>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldguard</artifactId>
+            <version>6.1.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
+
 
 </project>
