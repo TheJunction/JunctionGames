@@ -18,6 +18,8 @@ import java.sql.Statement;
 
 /**
  * Created by david on 4/25.
+ *
+ * @author david
  */
 public class Core extends JavaPlugin {
 

@@ -1,0 +1,9 @@
+main: #GROUP#.#NAME#
+name: #NAME#
+author: PantherMan594
+version: #VERSION#
+depend: [WorldGuard, WorldEdit, ProtocolLib]
+commands:
+  dp:
+  tpcycle:
+  mcap:
