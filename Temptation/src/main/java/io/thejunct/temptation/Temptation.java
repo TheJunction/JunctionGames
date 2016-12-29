@@ -60,8 +60,9 @@ public class Temptation extends JavaPlugin implements Listener {
     private Set<Player> cooldownSet;
     private Map<UUID, Integer> mobDifficulty;
     private Map<UUID, Integer> diffCooldown;
+    private Map<UUID, Location> deathLoc;
+    private Map<UUID, List<ItemStack>> deathInv;
     private Map<Player, Location> tpCyclers;
-    private Map<String, Location> deathMap;
 
     private ProtocolManager protocolManager;
     private PacketListener hoverListener;
@@ -78,8 +79,9 @@ public class Temptation extends JavaPlugin implements Listener {
         cooldownSet = new HashSet<>();
         mobDifficulty = new HashMap<>();
         diffCooldown = new HashMap<>();
+        deathLoc = new HashMap<>();
+        deathInv = new HashMap<>();
         tpCyclers = new HashMap<>();
-        deathMap = new HashMap<>();
 
         wg = WGBukkit.getPlugin().getRegionManager(getServer().getWorld("world"));
         dpZone = wg.getRegion("dpzone");
@@ -297,6 +299,7 @@ public class Temptation extends JavaPlugin implements Listener {
                 }
             }
             sender.sendMessage(PREFIX + ChatColor.RED + "Invalid usage. To change your difficulty: " + ChatColor.GRAY + "/mcap" + ChatColor.RED + ".");
+            return false;
         }
         if (sender.isOp() && label.equalsIgnoreCase("dp")) {
             if (args.length == 1) {
@@ -346,15 +349,37 @@ public class Temptation extends JavaPlugin implements Listener {
                 p.setSpectatorTarget(null);
                 p.teleport(tpCyclers.get(p));
                 tpCyclers.remove(p);
+                return true;
             } else if (p.getGameMode().equals(GameMode.SPECTATOR)) {
                 final Location origLoc = p.getLocation();
                 tpCyclers.put(p, origLoc);
                 p.sendMessage(PREFIX + "Teleport cycle began. Run " + ChatColor.GRAY + "/tpcycle " + ChatColor.BLUE + "again to end.");
                 tpCycle(p);
+                return true;
             } else {
                 p.sendMessage(PREFIX + ChatColor.RED + "You must be in spectator mode to do that!");
+                return false;
+            }
+        } else if (sender.isOp() && command.getLabel().equalsIgnoreCase("restoreinv")) {
+            if (args.length == 1) {
+                Player p = getServer().getPlayer(args[0]);
+                if (p != null) {
+                    if (deathInv.containsKey(p.getUniqueId()) && !deathInv.get(p.getUniqueId()).isEmpty()) {
+                        p.getInventory().addItem(deathInv.get(p.getUniqueId()).toArray(new ItemStack[deathInv.get(p.getUniqueId()).size()]));
+                        p.sendMessage(PREFIX + "Your inventory was restored!");
+                    }
+                    sender.sendMessage(PREFIX + ChatColor.GRAY + p.getDisplayName() + ChatColor.BLUE + "'s inventory was restored.");
+                    return true;
+                } else {
+                    sender.sendMessage(PREFIX + ChatColor.RED + "Player " + ChatColor.GRAY + args[0] + ChatColor.RED + " not found!");
+                    return false;
+                }
+            } else {
+                sender.sendMessage(PREFIX + ChatColor.RED + "Usage: " + ChatColor.GRAY + "/restoreinv <name>");
+                return false;
             }
         }
+        sender.sendMessage(PREFIX + ChatColor.RED + "You don't have permission to use that command!");
         return false;
     }
 
@@ -476,20 +501,25 @@ public class Temptation extends JavaPlugin implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onDeathLowest(PlayerDeathEvent e) {
+        deathInv.put(e.getEntity().getUniqueId(), e.getDrops());
+    }
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onDeath(PlayerDeathEvent e) {
         Location deathLoc = e.getEntity().getLocation();
-        deathMap.put(e.getEntity().getUniqueId().toString(), deathLoc);
+        this.deathLoc.put(e.getEntity().getUniqueId(), deathLoc);
         getServer().getScheduler().runTaskLater(this, () -> e.getEntity().spigot().respawn(), 20);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onRespawn(PlayerRespawnEvent e) {
-        String uuid = e.getPlayer().getUniqueId().toString();
-        if (deathMap.containsKey(uuid)) {
-            Location deathLoc = deathMap.get(uuid);
+        UUID uuid = e.getPlayer().getUniqueId();
+        if (deathLoc.containsKey(uuid)) {
+            Location deathLoc = this.deathLoc.get(uuid);
             e.getPlayer().sendMessage(String.format(PREFIX + "Last death location: x: " + ChatColor.GRAY + "%s" + ChatColor.BLUE + ", y: " + ChatColor.GRAY + "%s" + ChatColor.BLUE + ", z: " + ChatColor.GRAY + "%s" + ChatColor.BLUE + ".", deathLoc.getBlockX(), deathLoc.getBlockY(), deathLoc.getBlockZ()));
-            deathMap.remove(uuid);
+            this.deathLoc.remove(uuid);
         }
     }
 }
