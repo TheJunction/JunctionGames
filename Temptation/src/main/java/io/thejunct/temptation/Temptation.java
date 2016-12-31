@@ -9,7 +9,6 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.*;
-import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.managers.RegionManager;
@@ -160,24 +159,8 @@ public class Temptation extends JavaPlugin implements Listener {
             }
         };
 
-        PacketListener tabListener = new PacketAdapter(this, ListenerPriority.HIGHEST, PacketType.Play.Server.PLAYER_INFO) {
-            @Override
-            public void onPacketSending(PacketEvent event) {
-                PlayerInfoData data = event.getPacket().getPlayerInfoDataLists().read(0).get(0);
-                if (event.getPlayer().getUniqueId() != data.getProfile().getUUID() && data.getGameMode().toBukkit().equals(GameMode.SPECTATOR) && getServer().getPlayer(data.getProfile().getUUID()).isOp()) {
-                    event.setCancelled(true);
-                }
-            }
-
-            @Override
-            public void onPacketReceiving(PacketEvent event) {
-
-            }
-        };
-
         try {
             protocolManager.addPacketListener(hoverListener);
-            protocolManager.addPacketListener(tabListener);
         } catch (Exception e) {
             e.printStackTrace();
         }
