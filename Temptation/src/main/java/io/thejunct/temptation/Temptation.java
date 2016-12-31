@@ -9,6 +9,7 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.*;
+import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.managers.RegionManager;
@@ -62,7 +63,7 @@ public class Temptation extends JavaPlugin implements Listener {
     private Map<UUID, Integer> diffCooldown;
     private Map<UUID, Location> deathLoc;
     private Map<UUID, List<ItemStack>> deathInv;
-    private Map<Player, Location> tpCyclers;
+    private Map<UUID, Location> tpCyclers;
 
     private ProtocolManager protocolManager;
     private PacketListener hoverListener;
@@ -109,7 +110,7 @@ public class Temptation extends JavaPlugin implements Listener {
 
         protocolManager = ProtocolLibrary.getProtocolManager();
 
-        hoverListener = new PacketAdapter(this, ListenerPriority.MONITOR, PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE) {
+        hoverListener = new PacketAdapter(this, ListenerPriority.HIGHEST, PacketType.Play.Server.CHAT, PacketType.Play.Server.TITLE) {
             @Override
             public void onPacketSending(PacketEvent event) {
                 if (event.getPacketType() == PacketType.Play.Server.TITLE || event.getPacketType() == PacketType.Play.Server.CHAT) {
@@ -159,8 +160,24 @@ public class Temptation extends JavaPlugin implements Listener {
             }
         };
 
+        PacketListener tabListener = new PacketAdapter(this, ListenerPriority.HIGHEST, PacketType.Play.Server.PLAYER_INFO) {
+            @Override
+            public void onPacketSending(PacketEvent event) {
+                PlayerInfoData data = event.getPacket().getPlayerInfoDataLists().read(0).get(0);
+                if (event.getPlayer().getUniqueId() != data.getProfile().getUUID() && data.getGameMode().toBukkit().equals(GameMode.SPECTATOR) && getServer().getPlayer(data.getProfile().getUUID()).isOp()) {
+                    event.setCancelled(true);
+                }
+            }
+
+            @Override
+            public void onPacketReceiving(PacketEvent event) {
+
+            }
+        };
+
         try {
             protocolManager.addPacketListener(hoverListener);
+            protocolManager.addPacketListener(tabListener);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -201,7 +218,7 @@ public class Temptation extends JavaPlugin implements Listener {
             if (specPlayer.isOnline() && !specPlayer.equals(p) && !specPlayer.getGameMode().equals(GameMode.SPECTATOR)) {
                 final int delay = iter++ * 200;
                 getServer().getScheduler().runTaskLater(this, () -> {
-                    if (tpCyclers.containsKey(p)) {
+                    if (tpCyclers.containsKey(p.getUniqueId())) {
                         p.sendTitle("", ChatColor.BLUE + specPlayer.getDisplayName(), 10, 180, 10);
                         p.setSpectatorTarget(null);
                         p.teleport(specPlayer);
@@ -211,7 +228,7 @@ public class Temptation extends JavaPlugin implements Listener {
         }
         final int delay = iter * 200;
         getServer().getScheduler().runTaskLater(this, () -> {
-            if (tpCyclers.containsKey(p)) {
+            if (tpCyclers.containsKey(p.getUniqueId())) {
                 p.sendMessage(PREFIX + "Want to end the cycle? Run " + ChatColor.GRAY + "/tpcycle " + ChatColor.BLUE + "again.");
                 tpCycle(p);
             }
@@ -344,15 +361,15 @@ public class Temptation extends JavaPlugin implements Listener {
             return false;
         } else if (label.equalsIgnoreCase("tpcycle") && sender instanceof Player) {
             final Player p = (Player) sender;
-            if (tpCyclers.containsKey(p)) {
+            if (tpCyclers.containsKey(p.getUniqueId())) {
                 p.sendMessage(PREFIX + "Teleport cycle ended. Teleporting to original location....");
                 p.setSpectatorTarget(null);
-                p.teleport(tpCyclers.get(p));
-                tpCyclers.remove(p);
+                p.teleport(tpCyclers.get(p.getUniqueId()));
+                tpCyclers.remove(p.getUniqueId());
                 return true;
             } else if (p.getGameMode().equals(GameMode.SPECTATOR)) {
                 final Location origLoc = p.getLocation();
-                tpCyclers.put(p, origLoc);
+                tpCyclers.put(p.getUniqueId(), origLoc);
                 p.sendMessage(PREFIX + "Teleport cycle began. Run " + ChatColor.GRAY + "/tpcycle " + ChatColor.BLUE + "again to end.");
                 tpCycle(p);
                 return true;
@@ -388,6 +405,11 @@ public class Temptation extends JavaPlugin implements Listener {
         UUID uuid = e.getPlayer().getUniqueId();
         mobDifficulty.put(uuid, data.getInt(uuid.toString() + ".diff", 30));
         diffCooldown.put(uuid, data.getInt(uuid.toString() + ".cool", 0));
+
+        if (tpCyclers.containsKey(uuid)) {
+            e.getPlayer().teleport(tpCyclers.get(uuid));
+            tpCyclers.remove(uuid);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -430,25 +452,20 @@ public class Temptation extends JavaPlugin implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onGMSwitchCycle(PlayerGameModeChangeEvent e) {
-        if (!e.getNewGameMode().equals(GameMode.SPECTATOR) && tpCyclers.containsKey(e.getPlayer())) {
+        if (!e.getNewGameMode().equals(GameMode.SPECTATOR) && tpCyclers.containsKey(e.getPlayer().getUniqueId())) {
             e.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onTeleport(PlayerTeleportEvent e) {
-        if (e.getCause().equals(PlayerTeleportEvent.TeleportCause.NETHER_PORTAL) || e.getCause().equals(PlayerTeleportEvent.TeleportCause.END_PORTAL)) {
+        if (e.getCause().equals(PlayerTeleportEvent.TeleportCause.NETHER_PORTAL)) {
             final Player p = e.getPlayer();
             for (ProtectedRegion rg : wg.getApplicableRegions(p.getLocation())) {
                 if (rg.getId().equals("spawn")) {
-                    if ((e.getCause().equals(PlayerTeleportEvent.TeleportCause.NETHER_PORTAL) && !p.hasAchievement(Achievement.NETHER_PORTAL))
-                            || (e.getCause().equals(PlayerTeleportEvent.TeleportCause.END_PORTAL) && !p.hasAchievement(Achievement.THE_END))) {
+                    if (e.getCause().equals(PlayerTeleportEvent.TeleportCause.NETHER_PORTAL) && !p.hasAchievement(Achievement.NETHER_PORTAL)) {
                         e.setCancelled(true);
-                        if (e.getCause().equals(PlayerTeleportEvent.TeleportCause.NETHER_PORTAL)) {
-                            p.teleport(new Location(getServer().getWorld("world"), 2678.5, 66, 6647.0, 90, 0));
-                        } else {
-                            p.teleport(SPAWN);
-                        }
+                        p.teleport(new Location(getServer().getWorld("world"), 2678.5, 66, 6647.0, 90, 0));
                         if (!cooldownSet.contains(p)) {
                             p.sendMessage(PREFIX + "You are not worthy of using this portal!");
                             cooldownSet.add(p);
@@ -481,6 +498,22 @@ public class Temptation extends JavaPlugin implements Listener {
             } else if (p.getInventory().getItemInOffHand().getType().equals(Material.FIREWORK)) {
                 p.getInventory().setItemInOffHand(new ItemStack(Material.FIREWORK, 65));
                 p.getInventory().setChestplate(new ItemStack(Material.ELYTRA));
+            }
+        }
+    }
+
+    @EventHandler
+    public void onMove(PlayerMoveEvent e) {
+        Player p = e.getPlayer();
+        Location l = p.getLocation();
+        if (wg.getRegion("endportal").contains(l.getBlockX(), l.getBlockY(), l.getBlockZ())) {
+            if (!p.hasAchievement(Achievement.END_PORTAL)) {
+                p.teleport(SPAWN);
+                if (!cooldownSet.contains(p)) {
+                    p.sendMessage(PREFIX + "You are not worthy of using this portal!");
+                    cooldownSet.add(p);
+                    getServer().getScheduler().runTaskLater(this, () -> cooldownSet.remove(p), 10 * 20);
+                }
             }
         }
     }
