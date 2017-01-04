@@ -104,7 +104,7 @@ public class Temptation extends JavaPlugin implements Listener {
             diffCooldown.put(uuid, data.getInt(uuid.toString() + ".cool", 0));
         }
 
-        final String pattern = "(§8(\\[|<§[0-9a-zA-z]§ki§8>)(§[0-9a-zA-Z]){1,2}[a-zA-Z]+)\\{\\\\hovName:([§0-9a-zA-Z -_]+)\\\\}(§8]|§8<§[0-9a-zA-z]§ki§8>)";
+        final String pattern = "((§c§l§oT§9§lJ |§8\\[)(§[0-9a-zA-Z]){1,2}[a-zA-Z]+)\\{\\\\hovName:([§0-9a-zA-Z -_]+)\\\\}(§8]| §8§l\\|)";
         final Pattern hoverName = Pattern.compile(pattern);
 
         protocolManager = ProtocolLibrary.getProtocolManager();
