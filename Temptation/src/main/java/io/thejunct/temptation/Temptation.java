@@ -13,6 +13,8 @@ import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import me.ryanhamshire.GriefPrevention.Claim;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -52,12 +54,14 @@ import java.util.regex.Pattern;
  *
  * @author david
  */
+@SuppressWarnings("unused")
 public class Temptation extends JavaPlugin implements Listener {
     private static final Long JAN_FIRST = LocalDate.of(2016, 1, 1).toEpochDay();
     private static final String PREFIX = ChatColor.RED + ChatColor.ITALIC.toString() + ChatColor.BOLD + "T" + ChatColor.BLUE + ChatColor.BOLD + "J " + ChatColor.GRAY + "Temptation " + ChatColor.DARK_GRAY + ChatColor.BOLD + "> " + ChatColor.BLUE;
     private static Location SPAWN;
 
     private Set<Player> cooldownSet;
+    private Set<UUID> recordingYoutubers;
     private Map<UUID, Integer> mobDifficulty;
     private Map<UUID, Integer> diffCooldown;
     private Map<UUID, Location> deathLoc;
@@ -73,10 +77,12 @@ public class Temptation extends JavaPlugin implements Listener {
     private File dataFile;
     private YamlConfiguration data;
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
         cooldownSet = new HashSet<>();
+        recordingYoutubers = new HashSet<>();
         mobDifficulty = new HashMap<>();
         diffCooldown = new HashMap<>();
         deathLoc = new HashMap<>();
@@ -198,7 +204,7 @@ public class Temptation extends JavaPlugin implements Listener {
     private void tpCycle(final Player p) {
         int iter = 0;
         for (final Player specPlayer : getServer().getOnlinePlayers()) {
-            if (specPlayer.isOnline() && !specPlayer.equals(p) && !specPlayer.getGameMode().equals(GameMode.SPECTATOR)) {
+            if (specPlayer.isOnline() && !specPlayer.equals(p) && !specPlayer.getGameMode().equals(GameMode.SPECTATOR) && !recordingYoutubers.contains(specPlayer.getUniqueId())) {
                 final int delay = iter++ * 200;
                 getServer().getScheduler().runTaskLater(this, () -> {
                     if (tpCyclers.containsKey(p.getUniqueId())) {
@@ -378,6 +384,26 @@ public class Temptation extends JavaPlugin implements Listener {
                 sender.sendMessage(PREFIX + ChatColor.RED + "Usage: " + ChatColor.GRAY + "/restoreinv <name>");
                 return false;
             }
+        } else if (sender instanceof Player && sender.isOp() && command.getLabel().equalsIgnoreCase("selclaim")) {
+            GriefPrevention gP = (GriefPrevention) getServer().getPluginManager().getPlugin("GriefPrevention");
+
+            Claim claim = gP.dataStore.getClaimAt(((Player) sender).getLocation(), true, null);
+
+            if (claim == null) {
+                sender.sendMessage(PREFIX + ChatColor.RED + "No claim found.");
+                return false;
+            }
+
+            Location l = claim.getLesserBoundaryCorner();
+            Location l2 = claim.getGreaterBoundaryCorner();
+            if (l2.getBlockY() == 0 || l2.getBlockY() == l.getBlockY()) {
+                l2.setY(255.0);
+            }
+
+            getServer().dispatchCommand(sender, String.format("/pos1 %s,%s,%s", l.getBlockX(), l.getBlockY(), l.getBlockZ()));
+            getServer().dispatchCommand(sender, String.format("/pos2 %s,%s,%s", l2.getBlockX(), l2.getBlockY(), l2.getBlockZ()));
+            getServer().dispatchCommand(sender, "spawn");
+            getServer().dispatchCommand(sender, "/copy");
         }
         sender.sendMessage(PREFIX + ChatColor.RED + "You don't have permission to use that command!");
         return false;
@@ -424,6 +450,11 @@ public class Temptation extends JavaPlugin implements Listener {
                 e.setCancelled(true);
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onChat(AsyncPlayerChatEvent e) {
+        e.getRecipients().removeIf(p -> recordingYoutubers.contains(p.getUniqueId()));
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -485,6 +516,7 @@ public class Temptation extends JavaPlugin implements Listener {
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @EventHandler
     public void onMove(PlayerMoveEvent e) {
         Player p = e.getPlayer();
