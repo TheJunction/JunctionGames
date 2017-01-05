@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2016 The Junction Network. All Rights Reserved.
+ * Copyright (c) 2017 The Junction Network. All Rights Reserved.
  * Created by PantherMan594.
  */
 
 package io.thejunct.core.player;
 
-import net.minecraft.server.v1_10_R1.IChatBaseComponent;
-import net.minecraft.server.v1_10_R1.PacketPlayOutTitle;
+import net.minecraft.server.v1_11_R1.IChatBaseComponent;
+import net.minecraft.server.v1_11_R1.PacketPlayOutTitle;
 import org.bukkit.ChatColor;
-import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_11_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;

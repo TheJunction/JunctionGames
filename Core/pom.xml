@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2016 The Junction Network. All Rights Reserved.
+  ~ Copyright (c) 2017 The Junction Network. All Rights Reserved.
   ~ Created by PantherMan594.
   -->
 
@@ -64,5 +64,15 @@
             </plugin>
         </plugins>
     </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.minecraft</groupId>
+            <artifactId>minecraft</artifactId>
+            <version>v1_11_R1</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../libs/spigot.jar</systemPath>
+        </dependency>
+    </dependencies>
 
 </project>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Junction Network. All Rights Reserved.
+ * Copyright (c) 2017 The Junction Network. All Rights Reserved.
  * Created by PantherMan594.
  */
 
@@ -104,7 +104,7 @@ public class Temptation extends JavaPlugin implements Listener {
             diffCooldown.put(uuid, data.getInt(uuid.toString() + ".cool", 0));
         }
 
-        final String pattern = "((§c§l§oT§9§lJ |§8\\[)(§[0-9a-zA-Z]){1,2}[a-zA-Z]+)\\{\\\\hovName:([§0-9a-zA-Z -_]+)\\\\}(§8]| §8§l\\|)";
+        final String pattern = "((§c§l§oT§9§lJ |§8\\[)(§[0-9a-zA-Z]){1,2}[a-zA-Z]+)\\{\\\\hovName:([§0-9a-zA-Z -_]+)\\\\}(§8]| §8\\|)";
         final Pattern hoverName = Pattern.compile(pattern);
 
         protocolManager = ProtocolLibrary.getProtocolManager();
