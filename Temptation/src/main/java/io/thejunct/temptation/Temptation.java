@@ -404,6 +404,7 @@ public class Temptation extends JavaPlugin implements Listener {
             getServer().dispatchCommand(sender, String.format("/pos2 %s,%s,%s", l2.getBlockX(), l2.getBlockY(), l2.getBlockZ()));
             getServer().dispatchCommand(sender, "spawn");
             getServer().dispatchCommand(sender, "/copy");
+            return true;
         }
         sender.sendMessage(PREFIX + ChatColor.RED + "You don't have permission to use that command!");
         return false;
@@ -457,15 +458,8 @@ public class Temptation extends JavaPlugin implements Listener {
         e.getRecipients().removeIf(p -> recordingYoutubers.contains(p.getUniqueId()));
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onGMSwitch(PlayerGameModeChangeEvent e) {
-        if (e.getNewGameMode().equals(GameMode.SPECTATOR)) {
-            getServer().getScheduler().runTaskLater(this, () -> e.getPlayer().setPlayerListName(ChatColor.WHITE + e.getPlayer().getName()), 20);
-        }
-    }
-
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onGMSwitchCycle(PlayerGameModeChangeEvent e) {
+    public void onGMSwitch(PlayerGameModeChangeEvent e) {
         if (!e.getNewGameMode().equals(GameMode.SPECTATOR) && tpCyclers.containsKey(e.getPlayer().getUniqueId())) {
             e.setCancelled(true);
         }
