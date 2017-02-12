@@ -420,6 +420,10 @@ public class Temptation extends JavaPlugin implements Listener {
             e.getPlayer().teleport(tpCyclers.get(uuid));
             tpCyclers.remove(uuid);
         }
+
+        if (e.getPlayer().isOp()) {
+            e.getPlayer().getWorld().spigot().strikeLightningEffect(e.getPlayer().getLocation(), false);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
